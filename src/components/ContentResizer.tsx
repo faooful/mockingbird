@@ -14,6 +14,7 @@ export default function ContentResizer({ content, maxRows, maxCols, onResize }: 
   const resizerRef = useRef<HTMLDivElement>(null);
 
   const handleMouseDown = (e: React.MouseEvent, direction: "se" | "e" | "s") => {
+    e.preventDefault();
     e.stopPropagation();
 
     const startX = e.clientX;
@@ -25,23 +26,30 @@ export default function ContentResizer({ content, maxRows, maxCols, onResize }: 
       const deltaX = moveEvent.clientX - startX;
       const deltaY = moveEvent.clientY - startY;
 
+      // Use a simpler calculation - assume minimum cell size
+      const minCellSize = 100; // minimum cell size in pixels
+      const gap = 8;
+      
       // Calculate new dimensions based on direction
       let newRows = startRows;
       let newCols = startCols;
 
       if (direction === "s" || direction === "se") {
-        // Each row is 60px + 4px gap = 64px
         const maxAllowedRows = maxRows - content.position.row;
-        newRows = Math.max(1, Math.min(maxAllowedRows, startRows + Math.round(deltaY / 64)));
+        const rowChange = Math.round(deltaY / (minCellSize + gap));
+        newRows = Math.max(1, Math.min(maxAllowedRows, startRows + rowChange));
       }
 
       if (direction === "e" || direction === "se") {
-        // Each column is 80px + 4px gap = 84px
         const maxAllowedCols = maxCols - content.position.col;
-        newCols = Math.max(1, Math.min(maxAllowedCols, startCols + Math.round(deltaX / 84)));
+        const colChange = Math.round(deltaX / (minCellSize + gap));
+        newCols = Math.max(1, Math.min(maxAllowedCols, startCols + colChange));
       }
 
-      onResize(content.id, { rows: newRows, cols: newCols });
+      // Only update if dimensions actually changed
+      if (newRows !== startRows || newCols !== startCols) {
+        onResize(content.id, { rows: newRows, cols: newCols });
+      }
     };
 
     const handleMouseUp = () => {
@@ -58,19 +66,20 @@ export default function ContentResizer({ content, maxRows, maxCols, onResize }: 
       {/* Corner resizer */}
       <div
         ref={resizerRef}
-        className="absolute bottom-1 right-1 w-3 h-3 cursor-se-resize bg-blue-500 hover:bg-blue-600 transition-colors rounded-sm"
+        className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize bg-neutral-400 hover:bg-neutral-600 transition-colors z-50 opacity-0 group-hover:opacity-100"
         onMouseDown={(e) => handleMouseDown(e, "se")}
+        title="Drag to resize"
       />
       
       {/* Bottom edge resizer */}
       <div
-        className="absolute bottom-1 left-1 right-4 h-1 cursor-s-resize hover:bg-blue-400 transition-colors"
+        className="absolute bottom-0 left-0 right-4 h-2 cursor-s-resize hover:bg-neutral-300 transition-colors z-50 opacity-0 hover:opacity-50"
         onMouseDown={(e) => handleMouseDown(e, "s")}
       />
       
       {/* Right edge resizer */}
       <div
-        className="absolute top-1 bottom-4 right-1 w-1 cursor-e-resize hover:bg-blue-400 transition-colors"
+        className="absolute top-0 bottom-4 right-0 w-2 cursor-e-resize hover:bg-neutral-300 transition-colors z-50 opacity-0 hover:opacity-50"
         onMouseDown={(e) => handleMouseDown(e, "e")}
       />
     </>

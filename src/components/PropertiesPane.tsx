@@ -16,8 +16,8 @@ interface PropertiesPaneProps {
 export default function PropertiesPane({ selectedContent, onUpdateContent, onClose }: PropertiesPaneProps) {
   if (!selectedContent) {
     return (
-      <div className="w-80 border-l border-border bg-card h-full flex items-center justify-center">
-        <p className="text-muted-foreground">Select a component to edit its properties</p>
+      <div className="w-80 border-l border-neutral-300 bg-neutral-100 h-full flex items-center justify-center">
+        <p className="text-neutral-500 text-sm">Select a component to edit its properties</p>
       </div>
     );
   }
@@ -477,15 +477,15 @@ export default function PropertiesPane({ selectedContent, onUpdateContent, onClo
   };
 
   return (
-    <div className="w-80 border-l border-border bg-card h-full flex flex-col">
-      <CardHeader className="pb-3">
+    <div className="w-80 border-l border-neutral-300 bg-neutral-100 h-full flex flex-col">
+      <CardHeader className="pb-3 border-b border-neutral-300">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">Properties</CardTitle>
-          <Button variant="ghost" size="sm" onClick={onClose}>×</Button>
+          <CardTitle className="text-sm font-normal">Properties</CardTitle>
+          <Button variant="ghost" size="sm" onClick={onClose} className="h-6 w-6 p-0">×</Button>
         </div>
-        <p className="text-sm text-muted-foreground capitalize">{selectedContent.type} Component</p>
+        <p className="text-xs text-neutral-600 capitalize">{selectedContent.type} Component</p>
       </CardHeader>
-      <CardContent className="flex-1 overflow-y-auto">
+      <CardContent className="flex-1 overflow-y-auto pt-4">
         {renderPropertyEditor()}
       </CardContent>
     </div>

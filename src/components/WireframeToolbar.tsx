@@ -27,47 +27,61 @@ export default function WireframeToolbar({
   onExport
 }: WireframeToolbarProps) {
   return (
-    <Card className="p-4">
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <div className="flex items-center gap-4">
-          {/* Grid Controls */}
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">Grid:</span>
-            <div className="flex items-center gap-1">
-              <span className="text-sm">Rows:</span>
-              <Button variant="outline" size="sm" onClick={onRemoveRow} disabled={rows <= 1}>
-                -
-              </Button>
-              <span className="text-sm w-8 text-center">{rows}</span>
-              <Button variant="outline" size="sm" onClick={onAddRow}>+</Button>
-            </div>
-            
-            <div className="flex items-center gap-1">
-              <span className="text-sm">Cols:</span>
-              <Button variant="outline" size="sm" onClick={onRemoveCol} disabled={cols <= 1}>
-                -
-              </Button>
-              <span className="text-sm w-8 text-center">{cols}</span>
-              <Button variant="outline" size="sm" onClick={onAddCol}>+</Button>
-            </div>
-          </div>
-
-          {/* Stats */}
-          <div className="text-sm text-muted-foreground">
-            Grid: {cols}×{rows} | {contentCount} content{contentCount !== 1 ? 's' : ''} added
-          </div>
+    <div className="flex items-center justify-between px-4 py-3 bg-white border-b border-neutral-200">
+      {/* Left side - Grid Controls */}
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 bg-neutral-100 border border-neutral-300 rounded px-3 py-1.5">
+          <input
+            type="number"
+            value={cols}
+            onChange={(e) => {
+              const val = parseInt(e.target.value);
+              if (val > cols) onAddCol();
+              else if (val < cols) onRemoveCol();
+            }}
+            className="w-8 text-center text-sm bg-transparent border-none focus:outline-none"
+            min="1"
+          />
+          <span className="text-xs text-neutral-600">Columns</span>
         </div>
 
-        {/* Actions */}
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={onClearAll} disabled={contentCount === 0}>
-            Clear All
-          </Button>
-          <Button variant="outline" size="sm" onClick={onExport} disabled={contentCount === 0}>
-            Export
-          </Button>
+        <div className="flex items-center gap-2 bg-neutral-100 border border-neutral-300 rounded px-3 py-1.5">
+          <input
+            type="number"
+            value={rows}
+            onChange={(e) => {
+              const val = parseInt(e.target.value);
+              if (val > rows) onAddRow();
+              else if (val < rows) onRemoveRow();
+            }}
+            className="w-8 text-center text-sm bg-transparent border-none focus:outline-none"
+            min="1"
+          />
+          <span className="text-xs text-neutral-600">Rows</span>
         </div>
       </div>
-    </Card>
+
+      {/* Right side - Actions */}
+      <div className="flex items-center gap-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onClearAll}
+          disabled={contentCount === 0}
+          className="text-xs text-neutral-600 hover:text-neutral-900"
+        >
+          Clear
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onExport}
+          disabled={contentCount === 0}
+          className="text-xs"
+        >
+          Export
+        </Button>
+      </div>
+    </div>
   );
 }

@@ -115,13 +115,13 @@ export default function ShadcnComponent({ content }: ShadcnComponentProps) {
 
       case "tabs":
         const tabs = props.tabs || [
-          { id: "tab1", label: "Tab 1", content: "Content for Tab 1" },
-          { id: "tab2", label: "Tab 2", content: "Content for Tab 2" },
-          { id: "tab3", label: "Tab 3", content: "Content for Tab 3" }
+          { id: "tab1", label: "Tab 1" },
+          { id: "tab2", label: "Tab 2" },
+          { id: "tab3", label: "Tab 3" }
         ];
         return (
-          <div className="w-full h-full p-2">
-            <Tabs defaultValue={tabs[0]?.id} className="h-full">
+          <div className="w-full h-full flex items-center justify-center p-2">
+            <Tabs defaultValue={tabs[0]?.id} className="w-full">
               <TabsList className="grid w-full" style={{ gridTemplateColumns: `repeat(${tabs.length}, 1fr)` }}>
                 {tabs.map((tab: any) => (
                   <TabsTrigger key={tab.id} value={tab.id} className="text-xs">
@@ -129,15 +129,6 @@ export default function ShadcnComponent({ content }: ShadcnComponentProps) {
                   </TabsTrigger>
                 ))}
               </TabsList>
-              {tabs.map((tab: any) => (
-                <TabsContent key={tab.id} value={tab.id} className="mt-2 h-full">
-                  <Card className="h-full">
-                    <CardContent className="p-2">
-                      <p className="text-xs">{tab.content}</p>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-              ))}
             </Tabs>
           </div>
         );
@@ -201,7 +192,7 @@ export default function ShadcnComponent({ content }: ShadcnComponentProps) {
   };
 
   return (
-    <div className="w-full h-full bg-white rounded border">
+    <div className="w-full h-full bg-white rounded border overflow-hidden">
       {renderComponent()}
     </div>
   );

@@ -3,11 +3,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import GridCell from "./GridCell";
-import ContentSelector from "./ContentSelector";
 import WireframeToolbar from "./WireframeToolbar";
 import PropertiesPane from "./PropertiesPane";
+import ComponentSidebar from "./ComponentSidebar";
+import ExportModal from "./ExportModal";
 
 export interface GridContent {
   id: string;
@@ -29,6 +29,8 @@ export default function WireframeGrid() {
   const [contents, setContents] = useState<GridContent[]>([]);
   const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
   const [selectedContent, setSelectedContent] = useState<GridContent | null>(null);
+  const [pendingComponentType, setPendingComponentType] = useState<GridContent["type"] | null>(null);
+  const [exportModalOpen, setExportModalOpen] = useState(false);
 
   const addRow = () => setRows(prev => prev + 1);
   const removeRow = () => setRows(prev => Math.max(1, prev - 1));
@@ -40,20 +42,53 @@ export default function WireframeGrid() {
     if (content) {
       setSelectedContent(content);
       setSelectedCell(null);
+      setPendingComponentType(null);
+    } else if (pendingComponentType) {
+      // Add component directly if one is selected from sidebar
+      handleAddContent(pendingComponentType, row, col);
+      setPendingComponentType(null);
     } else {
       setSelectedCell({ row, col });
       setSelectedContent(null);
     }
   };
 
-  const handleAddContent = (type: GridContent["type"]) => {
-    if (!selectedCell) return;
+  const handleCellDrop = (row: number, col: number, data: string) => {
+    // Check if cell is already occupied
+    const existingContent = getContentForCell(row, col);
+    if (existingContent) return;
+
+    // Check if we're moving an existing component
+    const movingContent = contents.find(c => c.id === data);
+    
+    if (movingContent) {
+      // Moving existing component to new position
+      setContents(contents.map(c => 
+        c.id === data 
+          ? { ...c, position: { row, col } }
+          : c
+      ));
+    } else {
+      // Adding new component from sidebar
+      handleAddContent(data as GridContent["type"], row, col);
+      setPendingComponentType(null);
+    }
+  };
+
+  const handleComponentSelect = (type: GridContent["type"]) => {
+    setPendingComponentType(type);
+    setSelectedContent(null);
+  };
+
+  const handleAddContent = (type: GridContent["type"], row?: number, col?: number) => {
+    const position = row !== undefined && col !== undefined ? { row, col } : selectedCell;
+    if (!position) return;
 
     const newContent: GridContent = {
       id: `content-${Date.now()}`,
       type,
       span: { rows: 1, cols: 1 },
-      position: selectedCell,
+      position,
       properties: {},
     };
 
@@ -99,24 +134,7 @@ export default function WireframeGrid() {
   };
 
   const handleExport = () => {
-    const exportData = {
-      grid: { rows, cols },
-      contents: contents.map(content => ({
-        ...content,
-        position: { ...content.position },
-        span: { ...content.span }
-      }))
-    };
-    
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'wireframe.json';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    setExportModalOpen(true);
   };
 
   const getContentForCell = (row: number, col: number) => {
@@ -145,8 +163,12 @@ export default function WireframeGrid() {
   };
 
   return (
-    <div className="flex h-full">
-      <div className="flex-1 space-y-6">
+    <div className="flex h-full w-full">
+      {/* Component Sidebar */}
+      <ComponentSidebar onSelectComponent={handleComponentSelect} />
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col h-full overflow-hidden">
         {/* Toolbar */}
         <WireframeToolbar
           rows={rows}
@@ -160,16 +182,20 @@ export default function WireframeGrid() {
           onExport={handleExport}
         />
 
-        {/* Grid */}
-        <Card className="p-4">
+        {/* Grid Container */}
+        <div className="flex-1 bg-[#F5F5F5] p-12 overflow-auto">
+          {pendingComponentType && (
+            <div className="mb-4 p-3 bg-neutral-100 border border-neutral-300 rounded text-sm text-neutral-700 max-w-fit">
+              <strong className="capitalize">{pendingComponentType}</strong> selected. Click or drag to an empty cell to place it.
+            </div>
+          )}
           <div 
-            className="mx-auto border-2 border-dashed border-gray-300 rounded-lg overflow-hidden"
+            className="w-full h-full"
             style={{
               display: 'grid',
-              gridTemplateRows: `repeat(${rows}, 60px)`,
-              gridTemplateColumns: `repeat(${cols}, 80px)`,
-              gap: '4px',
-              width: 'fit-content'
+              gridTemplateRows: `repeat(${rows}, minmax(100px, 1fr))`,
+              gridTemplateColumns: `repeat(${cols}, minmax(120px, 1fr))`,
+              gap: '8px'
             }}
           >
             {/* Render all cells in the grid */}
@@ -188,6 +214,7 @@ export default function WireframeGrid() {
                   content={isMainContent ? content : undefined}
                   isOccupied={isOccupied && !isMainContent}
                   onClick={() => handleCellClick(rowIndex, colIndex)}
+                  onDrop={handleCellDrop}
                   isSelected={selectedContent?.id === content?.id}
                   onResize={handleResizeContent}
                   onDelete={handleDeleteContent}
@@ -198,24 +225,16 @@ export default function WireframeGrid() {
               );
             })}
           </div>
-        </Card>
-
-        {/* Content Selector Dialog */}
-        <Dialog open={!!selectedCell} onOpenChange={() => setSelectedCell(null)}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add Content to Cell ({selectedCell?.row}, {selectedCell?.col})</DialogTitle>
-            </DialogHeader>
-            <ContentSelector onSelect={handleAddContent} />
-          </DialogContent>
-        </Dialog>
+        </div>
       </div>
 
-      {/* Properties Pane */}
-      <PropertiesPane
-        selectedContent={selectedContent}
-        onUpdateContent={handleUpdateContent}
-        onClose={() => setSelectedContent(null)}
+      {/* Export Modal */}
+      <ExportModal
+        open={exportModalOpen}
+        onOpenChange={setExportModalOpen}
+        contents={contents}
+        rows={rows}
+        cols={cols}
       />
     </div>
   );
