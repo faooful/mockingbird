@@ -36,6 +36,7 @@ export default function GridCell({
   contentSpan
 }: GridCellProps) {
   const [isDragOver, setIsDragOver] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -70,8 +71,28 @@ export default function GridCell({
   const handleDragStart = (e: React.DragEvent) => {
     if (!content) return;
     e.stopPropagation();
+    setIsDragging(true);
     e.dataTransfer.setData("movingContentId", content.id);
     e.dataTransfer.effectAllowed = "move";
+    
+    // Create a compact drag preview matching the component size
+    const target = e.currentTarget as HTMLElement;
+    const rect = target.getBoundingClientRect();
+    const dragImage = target.cloneNode(true) as HTMLElement;
+    dragImage.style.width = `${Math.min(rect.width, 200)}px`;
+    dragImage.style.height = `${Math.min(rect.height, 200)}px`;
+    dragImage.style.position = 'fixed';
+    dragImage.style.top = '-1000px';
+    dragImage.style.opacity = '0.9';
+    dragImage.style.transform = 'rotate(3deg)';
+    dragImage.style.boxShadow = '0 8px 24px rgba(0,0,0,0.25)';
+    document.body.appendChild(dragImage);
+    e.dataTransfer.setDragImage(dragImage, Math.min(rect.width, 200) / 2, Math.min(rect.height, 200) / 2);
+    setTimeout(() => document.body.removeChild(dragImage), 0);
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
   };
 
   const getContentDisplay = () => {
@@ -86,6 +107,7 @@ export default function GridCell({
         className="relative w-full h-full group"
         draggable
         onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
       >
         <div className="absolute inset-0 overflow-hidden cursor-move">
           {baseContent}
@@ -125,11 +147,13 @@ export default function GridCell({
   return (
     <div
       className={cn(
-        "border border-neutral-200 rounded cursor-pointer transition-all duration-200 bg-white overflow-hidden",
-        "hover:border-neutral-300 hover:shadow-sm",
-        isSelected && "border-neutral-400 ring-2 ring-neutral-300",
-        content && "bg-white shadow-sm border-neutral-300",
-        isDragOver && !content && "border-neutral-400 bg-neutral-50 ring-2 ring-neutral-300"
+        "rounded cursor-pointer transition-all duration-200 overflow-hidden",
+        !content && "border border-dashed border-gray-200/20 bg-white",
+        !content && "hover:border-gray-300/30 hover:bg-gray-50/20",
+        isSelected && "!border-solid !border-gray-300 ring-1 ring-gray-200/30",
+        content && !isDragging && "border border-solid border-gray-200/25 bg-white",
+        isDragging && "opacity-50 scale-95 border-dashed !border-blue-400",
+        isDragOver && !content && "!border-solid !border-blue-500 !bg-blue-50 shadow-lg scale-105 ring-2 ring-blue-300 -translate-y-1"
       )}
       onClick={onClick}
       onDragOver={handleDragOver}
@@ -145,9 +169,7 @@ export default function GridCell({
       {content ? (
         getContentDisplay()
       ) : (
-        <div className="w-full h-full flex items-center justify-center text-neutral-300 text-2xl font-light">
-          +
-        </div>
+        <div className="w-full h-full"></div>
       )}
     </div>
   );

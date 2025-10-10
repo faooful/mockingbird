@@ -11,6 +11,7 @@ import { Alert } from "@/components/ui/alert";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { GridContent } from "./WireframeGrid";
+import { cn } from "@/lib/utils";
 
 interface ComponentSidebarProps {
   onSelectComponent: (type: GridContent["type"]) => void;
@@ -21,6 +22,7 @@ interface ComponentSidebarProps {
 
 export default function ComponentSidebar({ onSelectComponent, selectedContent, onUpdateContent, onDeselectComponent }: ComponentSidebarProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [draggingComponent, setDraggingComponent] = useState<string | null>(null);
 
   const components = [
     { type: "button" as const, label: "Button" },
@@ -455,9 +457,28 @@ export default function ComponentSidebar({ onSelectComponent, selectedContent, o
                   onDragStart={(e) => {
                     e.dataTransfer.setData("componentType", component.type);
                     e.dataTransfer.effectAllowed = "copy";
+                    setDraggingComponent(component.type);
+                    
+                    // Create a compact drag preview
+                    const dragPreview = (e.target as HTMLElement).cloneNode(true) as HTMLElement;
+                    dragPreview.style.width = '140px';
+                    dragPreview.style.height = '112px';
+                    dragPreview.style.position = 'fixed';
+                    dragPreview.style.top = '-1000px';
+                    dragPreview.style.opacity = '0.95';
+                    dragPreview.style.transform = 'rotate(3deg)';
+                    dragPreview.style.boxShadow = '0 8px 24px rgba(0,0,0,0.25)';
+                    dragPreview.style.borderRadius = '8px';
+                    document.body.appendChild(dragPreview);
+                    e.dataTransfer.setDragImage(dragPreview, 70, 56);
+                    setTimeout(() => document.body.removeChild(dragPreview), 0);
                   }}
+                  onDragEnd={() => setDraggingComponent(null)}
                   onClick={() => onSelectComponent(component.type)}
-                  className="border border-neutral-300 rounded-lg p-3 hover:border-neutral-400 hover:bg-neutral-50 transition-all flex flex-col items-center justify-center gap-2 h-28 cursor-grab active:cursor-grabbing"
+                  className={cn(
+                    "border border-neutral-300 rounded-lg p-3 hover:border-neutral-400 hover:bg-neutral-50 transition-all flex flex-col items-center justify-center gap-2 h-28 cursor-grab active:cursor-grabbing",
+                    draggingComponent === component.type && "opacity-20 border-dashed border-blue-300 bg-blue-50/30"
+                  )}
                 >
                   <div className="flex items-center justify-center flex-1 w-full pointer-events-none">
                     {getComponentPreview(component.type)}
