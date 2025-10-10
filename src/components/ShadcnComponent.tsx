@@ -10,6 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { Bar, BarChart, Line, LineChart, Area, AreaChart, Pie, PieChart, XAxis, YAxis, CartesianGrid, Cell } from "recharts";
 import { GridContent } from "./WireframeGrid";
 
 interface ShadcnComponentProps {
@@ -25,7 +27,11 @@ export default function ShadcnComponent({ content }: ShadcnComponentProps) {
       case "button":
         return (
           <div className="w-full h-full flex items-center justify-center p-2">
-            <Button variant={props.variant || "default"} className="w-full h-full">
+            <Button 
+              variant={props.variant || "default"} 
+              size={props.size || "default"}
+              className="min-w-fit"
+            >
               {props.text || "Click me"}
             </Button>
           </div>
@@ -62,7 +68,8 @@ export default function ShadcnComponent({ content }: ShadcnComponentProps) {
       case "table":
         return (
           <div className="w-full h-full p-2 overflow-auto">
-            <Table className="text-xs">
+            <div className="border rounded-md">
+              <Table className="text-xs">
               <TableHeader>
                 <TableRow>
                   <TableHead>Name</TableHead>
@@ -86,7 +93,8 @@ export default function ShadcnComponent({ content }: ShadcnComponentProps) {
                   </TableRow>
                 ))}
               </TableBody>
-            </Table>
+              </Table>
+            </div>
           </div>
         );
 
@@ -178,6 +186,276 @@ export default function ShadcnComponent({ content }: ShadcnComponentProps) {
                   </Button>
                 ))}
               </nav>
+            </div>
+          </div>
+        );
+
+      case "textarea":
+        return (
+          <div className="w-full h-full flex items-center justify-center p-2">
+            <div className="w-full h-full border rounded p-2 text-xs text-neutral-400">
+              {props.placeholder || "Enter text..."}
+            </div>
+          </div>
+        );
+
+      case "select":
+        return (
+          <div className="w-full h-full flex items-center justify-center p-2">
+            <div className="w-full border rounded p-2 text-xs flex items-center justify-between">
+              <span>{props.value || "Select option"}</span>
+              <span>▼</span>
+            </div>
+          </div>
+        );
+
+      case "checkbox":
+        return (
+          <div className="w-full h-full flex items-center justify-center p-2 gap-2">
+            <div className="border rounded w-4 h-4 flex items-center justify-center text-xs">
+              {props.checked && "✓"}
+            </div>
+            <span className="text-xs">{props.label || "Checkbox"}</span>
+          </div>
+        );
+
+      case "radio":
+        return (
+          <div className="w-full h-full flex items-center justify-center p-2 gap-2">
+            <div className="border rounded-full w-4 h-4 flex items-center justify-center">
+              {props.selected && <div className="w-2 h-2 rounded-full bg-black"></div>}
+            </div>
+            <span className="text-xs">{props.label || "Radio"}</span>
+          </div>
+        );
+
+      case "switch":
+        return (
+          <div className="w-full h-full flex items-center justify-center p-2 gap-2">
+            <div className={`w-10 h-5 rounded-full relative ${props.enabled ? 'bg-black' : 'bg-neutral-300'}`}>
+              <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all ${props.enabled ? 'right-0.5' : 'left-0.5'}`}></div>
+            </div>
+            <span className="text-xs">{props.label || "Switch"}</span>
+          </div>
+        );
+
+      case "slider":
+        return (
+          <div className="w-full h-full flex items-center justify-center p-2">
+            <div className="w-full h-2 bg-neutral-300 rounded relative">
+              <div className="absolute left-1/2 top-1/2 -translate-y-1/2 w-3 h-3 bg-black rounded-full"></div>
+            </div>
+          </div>
+        );
+
+      case "dropdown":
+        return (
+          <div className="w-full h-full flex items-center justify-center p-2">
+            <div className="w-full border rounded p-2 text-xs flex items-center justify-between">
+              <span>{props.label || "Menu"}</span>
+              <span>▼</span>
+            </div>
+          </div>
+        );
+
+      case "popover":
+        return (
+          <div className="w-full h-full flex items-center justify-center p-2">
+            <div className="border rounded p-2 text-xs bg-white shadow-lg">
+              {props.content || "Popover content"}
+            </div>
+          </div>
+        );
+
+      case "tooltip":
+        return (
+          <div className="w-full h-full flex items-center justify-center p-2">
+            <div className="bg-black text-white text-xs px-2 py-1 rounded">
+              {props.text || "Tooltip"}
+            </div>
+          </div>
+        );
+
+      case "calendar":
+        return (
+          <div className="w-full h-full p-2">
+            <div className="border rounded p-2 text-xs">
+              <div className="font-semibold mb-2">Calendar</div>
+              <div className="grid grid-cols-7 gap-1 text-center">
+                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
+                  <div key={i} className="text-[10px] font-semibold">{day}</div>
+                ))}
+                {[...Array(7)].map((_, i) => (
+                  <div key={i} className="text-[10px] p-1">{i + 1}</div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+
+      case "datepicker":
+        return (
+          <div className="w-full h-full flex items-center justify-center p-2">
+            <div className="w-full border rounded p-2 text-xs flex items-center justify-between">
+              <span>{props.date || "Pick a date"}</span>
+              <span>📅</span>
+            </div>
+          </div>
+        );
+
+      case "progress":
+        return (
+          <div className="w-full h-full flex items-center justify-center p-2">
+            <div className="w-full h-2 bg-neutral-200 rounded">
+              <div className="h-full bg-black rounded" style={{ width: `${props.value || 60}%` }}></div>
+            </div>
+          </div>
+        );
+
+      case "separator":
+        return (
+          <div className="w-full h-full flex items-center justify-center p-2">
+            <div className="w-full h-px bg-neutral-300"></div>
+          </div>
+        );
+
+      case "skeleton":
+        return (
+          <div className="w-full h-full flex items-center justify-center p-2">
+            <div className="w-full h-8 bg-neutral-200 rounded animate-pulse"></div>
+          </div>
+        );
+
+      case "barchart":
+        const barChartData = [
+          { month: "Jan", value: 186 },
+          { month: "Feb", value: 305 },
+          { month: "Mar", value: 237 },
+          { month: "Apr", value: 273 },
+          { month: "May", value: 209 },
+          { month: "Jun", value: 214 },
+        ];
+        const barChartConfig = {
+          value: {
+            label: props.title || "Value",
+            color: "hsl(var(--chart-1))",
+          },
+        };
+        return (
+          <div className="w-full h-full p-2 flex flex-col">
+            {props.title && <div className="text-sm font-semibold mb-1">{props.title}</div>}
+            <div className="flex-1 min-h-0">
+              <ChartContainer config={barChartConfig} className="h-full w-full aspect-auto">
+                <BarChart data={barChartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" fontSize={10} />
+                  <YAxis fontSize={10} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Bar dataKey="value" fill="var(--color-value)" radius={4} />
+                </BarChart>
+              </ChartContainer>
+            </div>
+          </div>
+        );
+
+      case "linechart":
+        const lineChartData = [
+          { month: "Jan", value: 186 },
+          { month: "Feb", value: 305 },
+          { month: "Mar", value: 237 },
+          { month: "Apr", value: 273 },
+          { month: "May", value: 209 },
+          { month: "Jun", value: 214 },
+        ];
+        const lineChartConfig = {
+          value: {
+            label: props.title || "Value",
+            color: "hsl(var(--chart-1))",
+          },
+        };
+        return (
+          <div className="w-full h-full p-2 flex flex-col">
+            {props.title && <div className="text-sm font-semibold mb-1">{props.title}</div>}
+            <div className="flex-1 min-h-0">
+              <ChartContainer config={lineChartConfig} className="h-full w-full aspect-auto">
+                <LineChart data={lineChartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" fontSize={10} />
+                  <YAxis fontSize={10} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Line type="monotone" dataKey="value" stroke="var(--color-value)" strokeWidth={2} />
+                </LineChart>
+              </ChartContainer>
+            </div>
+          </div>
+        );
+
+      case "areachart":
+        const areaChartData = [
+          { month: "Jan", value: 186 },
+          { month: "Feb", value: 305 },
+          { month: "Mar", value: 237 },
+          { month: "Apr", value: 273 },
+          { month: "May", value: 209 },
+          { month: "Jun", value: 214 },
+        ];
+        const areaChartConfig = {
+          value: {
+            label: props.title || "Value",
+            color: "hsl(var(--chart-1))",
+          },
+        };
+        return (
+          <div className="w-full h-full p-2 flex flex-col">
+            {props.title && <div className="text-sm font-semibold mb-1">{props.title}</div>}
+            <div className="flex-1 min-h-0">
+              <ChartContainer config={areaChartConfig} className="h-full w-full aspect-auto">
+                <AreaChart data={areaChartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" fontSize={10} />
+                  <YAxis fontSize={10} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Area type="monotone" dataKey="value" stroke="var(--color-value)" fill="var(--color-value)" fillOpacity={0.2} />
+                </AreaChart>
+              </ChartContainer>
+            </div>
+          </div>
+        );
+
+      case "piechart":
+        const pieChartData = [
+          { category: "A", value: 275, fill: "hsl(var(--chart-1))" },
+          { category: "B", value: 200, fill: "hsl(var(--chart-2))" },
+          { category: "C", value: 187, fill: "hsl(var(--chart-3))" },
+        ];
+        const pieChartConfig = {
+          A: {
+            label: "Category A",
+            color: "hsl(var(--chart-1))",
+          },
+          B: {
+            label: "Category B",
+            color: "hsl(var(--chart-2))",
+          },
+          C: {
+            label: "Category C",
+            color: "hsl(var(--chart-3))",
+          },
+        };
+        return (
+          <div className="w-full h-full p-2 flex flex-col">
+            {props.title && <div className="text-sm font-semibold mb-1">{props.title}</div>}
+            <div className="flex-1 min-h-0">
+              <ChartContainer config={pieChartConfig} className="h-full w-full aspect-auto">
+                <PieChart>
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Pie data={pieChartData} dataKey="value" nameKey="category" cx="50%" cy="50%" outerRadius="80%">
+                    {pieChartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                </PieChart>
+              </ChartContainer>
             </div>
           </div>
         );

@@ -1,77 +1,51 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 
 interface WireframeToolbarProps {
-  rows: number;
-  cols: number;
   contentCount: number;
-  onAddRow: () => void;
-  onRemoveRow: () => void;
-  onAddCol: () => void;
-  onRemoveCol: () => void;
-  onClearAll: () => void;
   onExport: () => void;
+  mode: "pages" | "journeys";
+  onModeChange: (mode: "pages" | "journeys") => void;
 }
 
 export default function WireframeToolbar({
-  rows,
-  cols,
   contentCount,
-  onAddRow,
-  onRemoveRow,
-  onAddCol,
-  onRemoveCol,
-  onClearAll,
-  onExport
+  onExport,
+  mode,
+  onModeChange
 }: WireframeToolbarProps) {
   return (
     <div className="flex items-center justify-between px-4 py-3 bg-white border-b border-neutral-200">
-      {/* Left side - Grid Controls */}
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2 bg-neutral-100 border border-neutral-300 rounded px-3 py-1.5">
-          <input
-            type="number"
-            value={cols}
-            onChange={(e) => {
-              const val = parseInt(e.target.value);
-              if (val > cols) onAddCol();
-              else if (val < cols) onRemoveCol();
-            }}
-            className="w-8 text-center text-sm bg-transparent border-none focus:outline-none"
-            min="1"
-          />
-          <span className="text-xs text-neutral-600">Columns</span>
-        </div>
+      {/* Spacer for layout */}
+      <div className="flex-1"></div>
 
-        <div className="flex items-center gap-2 bg-neutral-100 border border-neutral-300 rounded px-3 py-1.5">
-          <input
-            type="number"
-            value={rows}
-            onChange={(e) => {
-              const val = parseInt(e.target.value);
-              if (val > rows) onAddRow();
-              else if (val < rows) onRemoveRow();
-            }}
-            className="w-8 text-center text-sm bg-transparent border-none focus:outline-none"
-            min="1"
-          />
-          <span className="text-xs text-neutral-600">Rows</span>
-        </div>
+      {/* Center - Mode Toggle */}
+      <div className="flex items-center gap-1 bg-neutral-100 border border-neutral-300 rounded p-1">
+        <button
+          onClick={() => onModeChange("pages")}
+          className={`px-3 py-1 rounded text-xs transition-colors ${
+            mode === "pages" 
+              ? "bg-white text-neutral-900 shadow-sm font-medium" 
+              : "text-neutral-500 hover:text-neutral-700"
+          }`}
+        >
+          Pages
+        </button>
+        <button
+          onClick={() => onModeChange("journeys")}
+          className={`px-3 py-1 rounded text-xs transition-colors ${
+            mode === "journeys" 
+              ? "bg-white text-neutral-900 shadow-sm font-medium" 
+              : "text-neutral-500 hover:text-neutral-700"
+          }`}
+        >
+          Journeys
+        </button>
       </div>
 
-      {/* Right side - Actions */}
-      <div className="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onClearAll}
-          disabled={contentCount === 0}
-          className="text-xs text-neutral-600 hover:text-neutral-900"
-        >
-          Clear
-        </Button>
+      {/* Right side - Export button */}
+      <div className="flex-1 flex justify-end">
         <Button
           variant="outline"
           size="sm"
