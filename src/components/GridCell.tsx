@@ -147,11 +147,11 @@ export default function GridCell({
   return (
     <div
       className={cn(
-        "rounded cursor-pointer transition-all duration-200 overflow-hidden",
-        !content && "border border-dashed border-gray-200/20 bg-white",
-        !content && "hover:border-gray-300/30 hover:bg-gray-50/20",
+        "relative rounded cursor-pointer transition-all duration-200 group/cell",
+        !content && "border border-dashed border-gray-200/20 bg-white overflow-hidden shadow-[inset_0_2px_6px_rgba(0,0,0,0.12)]",
+        !content && "hover:border-gray-300/30 hover:bg-gray-50/30 hover:shadow-[inset_0_1px_4px_rgba(0,0,0,0.1)]",
         isSelected && "!border-solid !border-gray-300 ring-1 ring-gray-200/30",
-        content && !isDragging && "border border-solid border-gray-200/25 bg-white",
+        content && !isDragging && "border border-solid border-gray-200/25 bg-white overflow-hidden shadow-md",
         isDragging && "opacity-50 scale-95 border-dashed !border-blue-400",
         isDragOver && !content && "!border-solid !border-blue-500 !bg-blue-50 shadow-lg scale-105 ring-2 ring-blue-300 -translate-y-1"
       )}
@@ -166,6 +166,12 @@ export default function GridCell({
         minHeight: 0
       }}
     >
+      {/* Corner highlights */}
+      <div className="absolute top-0.5 left-0.5 w-2.5 h-2.5 border-t-[1.5px] border-l-[1.5px] border-gray-400/50 pointer-events-none"></div>
+      <div className="absolute top-0.5 right-0.5 w-2.5 h-2.5 border-t-[1.5px] border-r-[1.5px] border-gray-400/50 pointer-events-none"></div>
+      <div className="absolute bottom-0.5 left-0.5 w-2.5 h-2.5 border-b-[1.5px] border-l-[1.5px] border-gray-400/50 pointer-events-none"></div>
+      <div className="absolute bottom-0.5 right-0.5 w-2.5 h-2.5 border-b-[1.5px] border-r-[1.5px] border-gray-400/50 pointer-events-none"></div>
+      
       {content ? (
         getContentDisplay()
       ) : (

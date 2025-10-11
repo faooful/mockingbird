@@ -47,7 +47,7 @@ export default function WireframeToolbar({
       {/* Right side - Export button */}
       <div className="flex-1 flex justify-end">
         <Button
-          variant="outline"
+          variant="default"
           size="sm"
           onClick={onExport}
           disabled={contentCount === 0}

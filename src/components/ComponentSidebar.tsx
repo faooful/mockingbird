@@ -23,37 +23,84 @@ interface ComponentSidebarProps {
 export default function ComponentSidebar({ onSelectComponent, selectedContent, onUpdateContent, onDeselectComponent }: ComponentSidebarProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [draggingComponent, setDraggingComponent] = useState<string | null>(null);
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
+    new Set(["Form Elements", "Data Display", "Navigation", "Feedback", "Data Viz", "Layout"])
+  );
 
-  const components = [
-    { type: "button" as const, label: "Button" },
-    { type: "input" as const, label: "Input" },
-    { type: "textarea" as const, label: "Textarea" },
-    { type: "select" as const, label: "Select" },
-    { type: "checkbox" as const, label: "Checkbox" },
-    { type: "radio" as const, label: "Radio" },
-    { type: "switch" as const, label: "Switch" },
-    { type: "slider" as const, label: "Slider" },
-    { type: "card" as const, label: "Card" },
-    { type: "table" as const, label: "Table" },
-    { type: "badge" as const, label: "Badge" },
-    { type: "avatar" as const, label: "Avatar" },
-    { type: "tabs" as const, label: "Tabs" },
-    { type: "accordion" as const, label: "Accordion" },
-    { type: "alert" as const, label: "Alert" },
-    { type: "dropdown" as const, label: "Dropdown" },
-    { type: "popover" as const, label: "Popover" },
-    { type: "tooltip" as const, label: "Tooltip" },
-    { type: "calendar" as const, label: "Calendar" },
-    { type: "datepicker" as const, label: "Date Picker" },
-    { type: "progress" as const, label: "Progress" },
-    { type: "separator" as const, label: "Separator" },
-    { type: "skeleton" as const, label: "Skeleton" },
-    { type: "sidebar" as const, label: "Sidebar" },
-    { type: "barchart" as const, label: "Bar Chart" },
-    { type: "linechart" as const, label: "Line Chart" },
-    { type: "areachart" as const, label: "Area Chart" },
-    { type: "piechart" as const, label: "Pie Chart" },
+  const componentCategories = [
+    {
+      name: "Form Elements",
+      components: [
+        { type: "button" as const, label: "Button" },
+        { type: "input" as const, label: "Input" },
+        { type: "textarea" as const, label: "Textarea" },
+        { type: "select" as const, label: "Select" },
+        { type: "checkbox" as const, label: "Checkbox" },
+        { type: "radio" as const, label: "Radio" },
+        { type: "switch" as const, label: "Switch" },
+        { type: "slider" as const, label: "Slider" },
+      ]
+    },
+    {
+      name: "Data Display",
+      components: [
+        { type: "card" as const, label: "Card" },
+        { type: "table" as const, label: "Table" },
+        { type: "badge" as const, label: "Badge" },
+        { type: "avatar" as const, label: "Avatar" },
+      ]
+    },
+    {
+      name: "Navigation",
+      components: [
+        { type: "tabs" as const, label: "Tabs" },
+        { type: "dropdown" as const, label: "Dropdown" },
+        { type: "sidebar" as const, label: "Sidebar" },
+      ]
+    },
+    {
+      name: "Feedback",
+      components: [
+        { type: "alert" as const, label: "Alert" },
+        { type: "progress" as const, label: "Progress" },
+        { type: "skeleton" as const, label: "Skeleton" },
+        { type: "tooltip" as const, label: "Tooltip" },
+        { type: "popover" as const, label: "Popover" },
+      ]
+    },
+    {
+      name: "Data Viz",
+      components: [
+        { type: "barchart" as const, label: "Bar Chart" },
+        { type: "linechart" as const, label: "Line Chart" },
+        { type: "areachart" as const, label: "Area Chart" },
+        { type: "piechart" as const, label: "Pie Chart" },
+      ]
+    },
+    {
+      name: "Layout",
+      components: [
+        { type: "accordion" as const, label: "Accordion" },
+        { type: "separator" as const, label: "Separator" },
+        { type: "calendar" as const, label: "Calendar" },
+        { type: "datepicker" as const, label: "Date Picker" },
+      ]
+    }
   ];
+
+  const components = componentCategories.flatMap(cat => cat.components);
+
+  const toggleCategory = (categoryName: string) => {
+    setExpandedCategories(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(categoryName)) {
+        newSet.delete(categoryName);
+      } else {
+        newSet.add(categoryName);
+      }
+      return newSet;
+    });
+  };
 
   const filteredComponents = components.filter(component =>
     component.label.toLowerCase().includes(searchQuery.toLowerCase())
@@ -196,13 +243,6 @@ export default function ComponentSidebar({ onSelectComponent, selectedContent, o
 
   return (
     <div className="w-64 border-r border-neutral-300 bg-white h-full flex flex-col">
-      {/* Logo */}
-      <div className="p-4 border-b border-neutral-200">
-        <div className="w-8 h-8 bg-black rounded flex items-center justify-center text-white font-bold">
-          M
-        </div>
-      </div>
-
       {selectedContent ? (
         /* Details Panel */
         <div className="flex-1 flex flex-col overflow-hidden">
@@ -438,7 +478,7 @@ export default function ComponentSidebar({ onSelectComponent, selectedContent, o
       ) : (
         /* Components List */
         <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="p-3 border-b border-neutral-200">
+          <div className="p-3">
             <Input
               type="text"
               placeholder="Search..."
@@ -448,7 +488,11 @@ export default function ComponentSidebar({ onSelectComponent, selectedContent, o
             />
           </div>
 
-          <div className="flex-1 overflow-y-auto p-3">
+          <div className="relative flex-1 overflow-hidden">
+            {/* Gradient fade at top */}
+            <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-white to-white/0 pointer-events-none z-10"></div>
+            
+            <div className="h-full overflow-y-auto p-3">
             <div className="grid grid-cols-2 gap-2">
               {filteredComponents.map((component) => (
                 <div
@@ -486,6 +530,7 @@ export default function ComponentSidebar({ onSelectComponent, selectedContent, o
                   <span className="text-xs text-neutral-600 font-medium pointer-events-none">{component.label}</span>
                 </div>
               ))}
+            </div>
             </div>
           </div>
         </div>
