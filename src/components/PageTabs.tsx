@@ -78,17 +78,17 @@ export default function PageTabs({
   };
 
   return (
-    <div className="flex items-center justify-between bg-neutral-100 border-b border-neutral-200 px-1 gap-1 h-10">
-      <div className="flex items-center gap-1 h-full">
+    <div className="flex items-center justify-between bg-neutral-100 border-b border-neutral-200 h-10">
+      <div className="flex items-center h-full">
       {pages.map((page) => (
         <div
           key={page.id}
           onClick={() => onPageChange(page.id)}
           className={`
-            group relative flex items-center gap-2 px-3 h-full cursor-pointer transition-all min-w-[100px] max-w-[200px] rounded-t
+            group relative flex items-center gap-2 px-3 cursor-pointer transition-all min-w-[100px] max-w-[200px] border-r border-neutral-300
             ${activePage === page.id 
-              ? "bg-white text-neutral-900 shadow-sm" 
-              : "bg-transparent text-neutral-500 hover:bg-neutral-200/50"
+              ? "bg-[#F5F5F5] text-neutral-900 h-[calc(100%+1px)] -mb-[1px]" 
+              : "bg-neutral-200 text-neutral-600 hover:bg-neutral-300 h-full"
             }
           `}
         >
@@ -131,12 +131,13 @@ export default function PageTabs({
       {/* Add Page Button */}
       <button
         onClick={onPageAdd}
-        className="flex items-center justify-center w-8 h-full hover:bg-neutral-200 transition-colors rounded"
+        className="flex items-center justify-center gap-1.5 px-3 h-full hover:bg-neutral-200 transition-colors border-r border-neutral-300"
         title="Add page"
       >
         <svg className="w-4 h-4 text-neutral-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
         </svg>
+        <span className="text-xs text-neutral-600">New</span>
       </button>
       </div>
 
