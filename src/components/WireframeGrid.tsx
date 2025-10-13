@@ -2,10 +2,8 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
 import GridCell from "./GridCell";
 import WireframeToolbar from "./WireframeToolbar";
-import PropertiesPane from "./PropertiesPane";
 import ComponentSidebar from "./ComponentSidebar";
 import ExportModal from "./ExportModal";
 import PreviewModal from "./PreviewModal";
@@ -226,10 +224,6 @@ export default function WireframeGrid() {
     }
   };
 
-  const addRow = () => setRows(prev => prev + 1);
-  const removeRow = () => setRows(prev => Math.max(1, prev - 1));
-  const addCol = () => setCols(prev => prev + 1);
-  const removeCol = () => setCols(prev => Math.max(1, prev - 1));
   const setRowsDirectly = (value: number) => setRows(Math.max(1, value));
   const setColsDirectly = (value: number) => setCols(Math.max(1, value));
 

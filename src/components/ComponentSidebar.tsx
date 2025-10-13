@@ -68,8 +68,6 @@ export default function ComponentSidebar({ onSelectComponent, selectedContent, o
     }
   ];
 
-  const components = componentCategories.flatMap(cat => cat.components);
-
   const toggleCategory = (categoryName: string) => {
     setExpandedCategories(prev => {
       const newSet = new Set(prev);

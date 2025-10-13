@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { GridContent } from "./WireframeGrid";
 
 interface Page {
@@ -58,7 +58,6 @@ export default function JourneyCanvas({
   const [draggingNode, setDraggingNode] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [connectingFrom, setConnectingFrom] = useState<{ pageId: string; componentId?: string } | null>(null);
-  const [hoveredComponent, setHoveredComponent] = useState<{ pageId: string; componentId: string } | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
 
   // Sync with parent pageNodes changes
@@ -229,7 +228,7 @@ export default function JourneyCanvas({
           const componentGap = 6; // space-y-1.5
           
           let fromY = fromPos.y + pageTagHeight + headerHeight; // Start of components list
-          let fromX = fromPos.x + 340 - componentPaddingHorizontal; // Right edge of component cards (not the page card)
+          const fromX = fromPos.x + 340 - componentPaddingHorizontal; // Right edge of component cards (not the page card)
           
           // If connecting from a specific component, calculate its position
           if (connection.fromComponentId && fromPage) {
