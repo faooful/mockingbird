@@ -398,8 +398,8 @@ export default function WireframeGrid() {
     <div className="flex h-full w-full overflow-hidden">
       {/* Component Sidebar - animated slide in/out */}
       <div 
-        className={`transition-all duration-500 ease-in-out shrink-0 overflow-hidden ${
-          mode === "pages" ? "w-80 opacity-100" : "w-0 opacity-0"
+        className={`transition-all duration-400 ease-in-out shrink-0 overflow-hidden ${
+          mode === "pages" ? "w-80 opacity-100 delay-200" : "w-0 opacity-0 delay-150"
         }`}
       >
         <div className="w-80">
@@ -424,8 +424,8 @@ export default function WireframeGrid() {
 
         {/* Page Tabs (only in pages mode) - animated slide down */}
         <div 
-          className={`transition-all duration-500 ease-in-out overflow-hidden ${
-            mode === "pages" ? "max-h-20 opacity-100" : "max-h-0 opacity-0"
+          className={`transition-all duration-400 ease-in-out overflow-hidden ${
+            mode === "pages" ? "max-h-20 opacity-100 delay-200" : "max-h-0 opacity-0 delay-150"
           }`}
         >
           <PageTabs
@@ -449,9 +449,9 @@ export default function WireframeGrid() {
 
         {/* Canvas area with overlay transition */}
         <div className="flex-1 relative overflow-hidden">
-          {/* Journey Canvas */}
-          <div className={`absolute inset-0 transition-opacity duration-500 ${
-            mode === "journeys" ? "opacity-100" : "opacity-0 pointer-events-none"
+          {/* Journey Canvas - dots fade in, then nodes */}
+          <div className={`absolute inset-0 transition-opacity duration-400 ${
+            mode === "journeys" ? "opacity-100 delay-500" : "opacity-0 pointer-events-none delay-0"
           }`}>
             <JourneyCanvas 
               pages={pages}
@@ -463,12 +463,13 @@ export default function WireframeGrid() {
                 setActivePage(pageId);
                 setMode("pages");
               }}
+              isVisible={mode === "journeys"}
             />
           </div>
           
-          {/* Grid Container */}
-          <div className={`absolute inset-0 bg-[#F5F5F5] p-4 overflow-hidden flex flex-col transition-opacity duration-500 ${
-            mode === "pages" ? "opacity-100" : "opacity-0 pointer-events-none"
+          {/* Grid Container - fades out first (pages→journeys) / fades in last (journeys→pages) */}
+          <div className={`absolute inset-0 bg-[#F5F5F5] p-4 overflow-hidden flex flex-col transition-opacity duration-400 ${
+            mode === "pages" ? "opacity-100 delay-500" : "opacity-0 pointer-events-none delay-0"
           }`}>
             {pendingComponentType && (
               <div className="mb-4 p-3 bg-neutral-100 border border-neutral-300 rounded text-sm text-neutral-700 max-w-fit">

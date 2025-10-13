@@ -29,6 +29,7 @@ interface JourneyCanvasProps {
   onPageNodesChange: (nodes: PageNode[]) => void;
   onConnectionsChange: (connections: Connection[]) => void;
   onPageSelect: (pageId: string) => void;
+  isVisible: boolean;
 }
 
 // Color palette for connections
@@ -49,7 +50,8 @@ export default function JourneyCanvas({
   connections: initialConnections,
   onPageNodesChange,
   onConnectionsChange,
-  onPageSelect 
+  onPageSelect,
+  isVisible
 }: JourneyCanvasProps) {
   const [pageNodes, setPageNodes] = useState<PageNode[]>(initialPageNodes);
   const [connections, setConnections] = useState<Connection[]>(initialConnections);
@@ -195,7 +197,7 @@ export default function JourneyCanvas({
   return (
     <div 
       ref={canvasRef}
-      className="w-full h-full bg-neutral-50 relative overflow-auto transition-all duration-500"
+      className="w-full h-full bg-neutral-50 relative overflow-auto"
       style={{
         backgroundImage: `radial-gradient(circle, #d4d4d4 1px, transparent 1px)`,
         backgroundSize: '20px 20px'
@@ -205,7 +207,12 @@ export default function JourneyCanvas({
       onClick={handleCanvasClick}
     >
       {/* SVG for connections */}
-      <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 1000 }}>
+      <svg 
+        className={`absolute inset-0 w-full h-full pointer-events-none transition-opacity duration-300 ${
+          isVisible ? "opacity-100 delay-300" : "opacity-0"
+        }`} 
+        style={{ zIndex: 1000 }}
+      >
         {connections.map(connection => {
           const fromPos = getNodePosition(connection.fromPageId);
           const toPos = getNodePosition(connection.toPageId);
@@ -264,8 +271,11 @@ export default function JourneyCanvas({
         })}
       </svg>
 
-      {/* Page nodes */}
-      {pageNodes.map(node => {
+      {/* Page nodes - delayed fade in after background */}
+      <div className={`transition-opacity duration-300 ${
+        isVisible ? "opacity-100 delay-300" : "opacity-0"
+      }`}>
+        {pageNodes.map(node => {
         const page = getPage(node.pageId);
         if (!page) return null;
 
@@ -401,6 +411,7 @@ export default function JourneyCanvas({
           </div>
         );
       })}
+      </div>
     </div>
   );
 }
