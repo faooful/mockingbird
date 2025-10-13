@@ -1,7 +1,7 @@
 "use client";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import GridCell from "./GridCell";
 import WireframeToolbar from "./WireframeToolbar";
@@ -46,6 +46,7 @@ interface Page {
 }
 
 export default function WireframeGrid() {
+  // Initialize state with defaults (no localStorage on first render)
   const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
   const [mode, setMode] = useState<"pages" | "journeys">("pages");
   const [rows, setRows] = useState(8);
@@ -63,6 +64,82 @@ export default function WireframeGrid() {
   const [pendingComponentType, setPendingComponentType] = useState<GridContent["type"] | null>(null);
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  // Load from localStorage after component mounts (client-side only)
+  useEffect(() => {
+    // Load everything synchronously to avoid multiple re-renders
+    const savedDevice = localStorage.getItem('wireframe-device');
+    const savedMode = localStorage.getItem('wireframe-mode');
+    const savedRows = localStorage.getItem('wireframe-rows');
+    const savedCols = localStorage.getItem('wireframe-cols');
+    const savedPages = localStorage.getItem('wireframe-pages');
+    const savedActivePage = localStorage.getItem('wireframe-activePage');
+    const savedPageNodes = localStorage.getItem('wireframe-pageNodes');
+    const savedConnections = localStorage.getItem('wireframe-connections');
+
+    // Batch all updates together using React 18's automatic batching
+    if (savedDevice) setDevice(savedDevice as "desktop" | "mobile");
+    if (savedMode) setMode(savedMode as "pages" | "journeys");
+    if (savedRows) setRows(parseInt(savedRows));
+    if (savedCols) setCols(parseInt(savedCols));
+    if (savedPages) setPages(JSON.parse(savedPages));
+    if (savedActivePage) setActivePage(savedActivePage);
+    if (savedPageNodes) setPageNodes(JSON.parse(savedPageNodes));
+    if (savedConnections) setConnections(JSON.parse(savedConnections));
+    
+    // Mark as hydrated after all updates
+    setIsHydrated(true);
+  }, []);
+
+  // Save to localStorage whenever state changes (but only after hydration)
+  useEffect(() => {
+    if (isHydrated) {
+      localStorage.setItem('wireframe-device', device);
+    }
+  }, [device, isHydrated]);
+
+  useEffect(() => {
+    if (isHydrated) {
+      localStorage.setItem('wireframe-mode', mode);
+    }
+  }, [mode, isHydrated]);
+
+  useEffect(() => {
+    if (isHydrated) {
+      localStorage.setItem('wireframe-rows', rows.toString());
+    }
+  }, [rows, isHydrated]);
+
+  useEffect(() => {
+    if (isHydrated) {
+      localStorage.setItem('wireframe-cols', cols.toString());
+    }
+  }, [cols, isHydrated]);
+
+  useEffect(() => {
+    if (isHydrated) {
+      localStorage.setItem('wireframe-pages', JSON.stringify(pages));
+    }
+  }, [pages, isHydrated]);
+
+  useEffect(() => {
+    if (isHydrated) {
+      localStorage.setItem('wireframe-activePage', activePage);
+    }
+  }, [activePage, isHydrated]);
+
+  useEffect(() => {
+    if (isHydrated) {
+      localStorage.setItem('wireframe-pageNodes', JSON.stringify(pageNodes));
+    }
+  }, [pageNodes, isHydrated]);
+
+  useEffect(() => {
+    if (isHydrated) {
+      localStorage.setItem('wireframe-connections', JSON.stringify(connections));
+    }
+  }, [connections, isHydrated]);
 
   // Get current page contents
   const currentPage = pages.find(p => p.id === activePage);
@@ -329,7 +406,7 @@ export default function WireframeGrid() {
           </div>
         ) : (
           /* Grid Container */
-          <div className="flex-1 bg-[#F5F5F5] p-8 overflow-hidden flex flex-col">
+          <div className="flex-1 bg-[#F5F5F5] p-4 overflow-hidden flex flex-col">
             {pendingComponentType && (
               <div className="mb-4 p-3 bg-neutral-100 border border-neutral-300 rounded text-sm text-neutral-700 max-w-fit">
                 <strong className="capitalize">{pendingComponentType}</strong> selected. Click or drag to an empty cell to place it.
