@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { GridContent } from "./WireframeGrid";
 
 interface Page {
@@ -59,6 +59,16 @@ export default function JourneyCanvas({
   const [hoveredComponent, setHoveredComponent] = useState<{ pageId: string; componentId: string } | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
 
+  // Sync with parent pageNodes changes
+  useEffect(() => {
+    setPageNodes(initialPageNodes);
+  }, [initialPageNodes]);
+
+  // Sync with parent connections changes
+  useEffect(() => {
+    setConnections(initialConnections);
+  }, [initialConnections]);
+
   // Helper to update page nodes
   const updatePageNodesState = (nodes: PageNode[] | ((prev: PageNode[]) => PageNode[])) => {
     const newNodes = typeof nodes === 'function' ? nodes(pageNodes) : nodes;
@@ -109,20 +119,11 @@ export default function JourneyCanvas({
     e.stopPropagation();
     
     if (connectingFrom) {
-      // Create connection
-      if (connectingFrom.pageId !== pageId || connectingFrom.componentId !== componentId) {
-        const newConnection: Connection = {
-          id: `conn-${Date.now()}`,
-          fromPageId: connectingFrom.pageId,
-          fromComponentId: connectingFrom.componentId,
-          toPageId: pageId,
-          toComponentId: componentId
-        };
-        updateConnectionsState([...connections, newConnection]);
-      }
-      setConnectingFrom(null);
+      // When connecting from a component, ignore clicks on other components
+      // User should click on a page header instead
+      return;
     } else {
-      // Start connecting
+      // Start connecting from this component
       setConnectingFrom({ pageId, componentId });
     }
   };
@@ -194,7 +195,7 @@ export default function JourneyCanvas({
   return (
     <div 
       ref={canvasRef}
-      className="w-full h-full bg-neutral-50 relative overflow-auto"
+      className="w-full h-full bg-neutral-50 relative overflow-auto transition-all duration-500"
       style={{
         backgroundImage: `radial-gradient(circle, #d4d4d4 1px, transparent 1px)`,
         backgroundSize: '20px 20px'
@@ -204,27 +205,46 @@ export default function JourneyCanvas({
       onClick={handleCanvasClick}
     >
       {/* SVG for connections */}
-      <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 1 }}>
+      <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 1000 }}>
         {connections.map(connection => {
           const fromPos = getNodePosition(connection.fromPageId);
           const toPos = getNodePosition(connection.toPageId);
           const color = getConnectionColor(connection);
-          const isSamePage = connection.fromPageId === connection.toPageId;
           
-          // Offset for component positions within the node
-          const fromY = fromPos.y + 60 + (connection.fromComponentId ? 40 : 0);
-          const toY = toPos.y + 60;
+          // Calculate component position within the page node
+          const fromPage = getPage(connection.fromPageId);
           
-          const fromX = fromPos.x + 150;
-          const toX = toPos.x + 150;
+          let fromY = fromPos.y + 40; // Header height
+          let fromX = fromPos.x + 320; // Right edge of the component card (340 - 20px padding)
+          
+          // If connecting from a specific component, calculate its position
+          if (connection.fromComponentId && fromPage) {
+            const sortedComponents = [...fromPage.contents].sort((a, b) => {
+              if (a.position.row !== b.position.row) {
+                return a.position.row - b.position.row;
+              }
+              return a.position.col - b.position.col;
+            });
+            const componentIndex = sortedComponents.findIndex(c => c.id === connection.fromComponentId);
+            
+            if (componentIndex !== -1) {
+              // Header (40px) + padding (20px) + component index * (component height ~84px + gap 8px) + half component height
+              fromY = fromPos.y + 40 + 20 + (componentIndex * 92) + 46; // Middle of component
+            }
+          }
+          
+          // Target is always the page header (center)
+          const toY = toPos.y + 40;
+          const toX = toPos.x; // Left edge of the target card
 
+          const midX = (fromX + toX) / 2;
+          
           return (
             <g key={connection.id}>
               <path
-                d={`M ${fromX} ${fromY} C ${fromX + 100} ${fromY}, ${toX - 100} ${toY}, ${toX} ${toY}`}
+                d={`M ${fromX} ${fromY} L ${midX} ${fromY} L ${midX} ${toY} L ${toX} ${toY}`}
                 stroke={color}
                 strokeWidth="2"
-                strokeDasharray={isSamePage ? "5,5" : "0"}
                 fill="none"
                 className="pointer-events-auto hover:opacity-50 cursor-pointer"
                 onClick={(e) => {
@@ -239,19 +259,6 @@ export default function JourneyCanvas({
                 fill={color}
                 className="pointer-events-none"
               />
-              {isSamePage && (
-                <text
-                  x={(fromX + toX) / 2}
-                  y={(fromY + toY) / 2 - 10}
-                  fill={color}
-                  fontSize="10"
-                  fontWeight="500"
-                  className="pointer-events-none"
-                  textAnchor="middle"
-                >
-                  UI
-                </text>
-              )}
             </g>
           );
         })}
@@ -278,14 +285,35 @@ export default function JourneyCanvas({
               left: node.position.x,
               top: node.position.y,
               width: 340,
-              zIndex: draggingNode === node.pageId ? 100 : 10,
+              zIndex: draggingNode === node.pageId ? 999 : 10,
             }}
           >
-            {/* Page name tag - positioned outside */}
-            <div className="relative flex items-center px-3 py-1.5 bg-amber-100 rounded-t-lg inline-flex">
-              <span className="text-sm font-semibold text-amber-800">{page.name}</span>
+            {/* Page name tag - positioned outside and clickable for connections */}
+            <div 
+              className={`relative flex items-center px-3 py-1.5 rounded-t-lg inline-flex transition-all ${
+                connectingFrom && connectingFrom.pageId !== node.pageId
+                  ? 'bg-blue-100 cursor-pointer hover:bg-blue-200 ring-2 ring-blue-400'
+                  : 'bg-amber-100'
+              }`}
+              onClick={(e) => {
+                if (connectingFrom && connectingFrom.pageId !== node.pageId) {
+                  handlePageClick(node.pageId, e);
+                }
+              }}
+            >
+              <span className={`text-sm font-semibold ${
+                connectingFrom && connectingFrom.pageId !== node.pageId
+                  ? 'text-blue-800'
+                  : 'text-amber-800'
+              }`}>
+                {page.name}
+              </span>
               {/* Extension that goes behind the card */}
-              <div className="absolute left-0 right-0 bottom-0 h-3 bg-amber-100 translate-y-full -z-10"></div>
+              <div className={`absolute left-0 right-0 bottom-0 h-3 translate-y-full -z-10 ${
+                connectingFrom && connectingFrom.pageId !== node.pageId
+                  ? 'bg-blue-100'
+                  : 'bg-amber-100'
+              }`}></div>
             </div>
             
             {/* Card */}

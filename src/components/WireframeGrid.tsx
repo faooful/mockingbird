@@ -92,6 +92,20 @@ export default function WireframeGrid() {
     setIsHydrated(true);
   }, []);
 
+  // Ensure all pages have corresponding pageNodes
+  useEffect(() => {
+    if (isHydrated) {
+      const missingNodes = pages.filter(page => !pageNodes.find(node => node.pageId === page.id));
+      if (missingNodes.length > 0) {
+        const newNodes = missingNodes.map((page, index) => ({
+          pageId: page.id,
+          position: { x: 100 + ((pageNodes.length + index) * 400), y: 100 }
+        }));
+        setPageNodes([...pageNodes, ...newNodes]);
+      }
+    }
+  }, [pages, pageNodes, isHydrated]);
+
   // Save to localStorage whenever state changes (but only after hydration)
   useEffect(() => {
     if (isHydrated) {
@@ -381,16 +395,22 @@ export default function WireframeGrid() {
   };
 
   return (
-    <div className="flex h-full w-full">
-      {/* Component Sidebar - only show in Pages mode */}
-      {mode === "pages" && (
-        <ComponentSidebar 
-          onSelectComponent={handleComponentSelect}
-          selectedContent={selectedContent}
-          onUpdateContent={handleUpdateContent}
-          onDeselectComponent={() => setSelectedContent(null)}
-        />
-      )}
+    <div className="flex h-full w-full overflow-hidden">
+      {/* Component Sidebar - animated slide in/out */}
+      <div 
+        className={`transition-all duration-500 ease-in-out shrink-0 overflow-hidden ${
+          mode === "pages" ? "w-80 opacity-100" : "w-0 opacity-0"
+        }`}
+      >
+        <div className="w-80">
+          <ComponentSidebar 
+            onSelectComponent={handleComponentSelect}
+            selectedContent={selectedContent}
+            onUpdateContent={handleUpdateContent}
+            onDeselectComponent={() => setSelectedContent(null)}
+          />
+        </div>
+      </div>
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col h-full overflow-hidden">
@@ -402,8 +422,12 @@ export default function WireframeGrid() {
           onModeChange={setMode}
         />
 
-        {/* Page Tabs (only in pages mode) */}
-        {mode === "pages" && (
+        {/* Page Tabs (only in pages mode) - animated slide down */}
+        <div 
+          className={`transition-all duration-500 ease-in-out overflow-hidden ${
+            mode === "pages" ? "max-h-20 opacity-100" : "max-h-0 opacity-0"
+          }`}
+        >
           <PageTabs
             pages={pages}
             activePage={activePage}
@@ -421,11 +445,14 @@ export default function WireframeGrid() {
             device={device}
             onDeviceChange={handleDeviceChange}
           />
-        )}
+        </div>
 
-        {/* Journey Canvas (only in journeys mode) */}
-        {mode === "journeys" ? (
-          <div className="flex-1 overflow-hidden">
+        {/* Canvas area with overlay transition */}
+        <div className="flex-1 relative overflow-hidden">
+          {/* Journey Canvas */}
+          <div className={`absolute inset-0 transition-opacity duration-500 ${
+            mode === "journeys" ? "opacity-100" : "opacity-0 pointer-events-none"
+          }`}>
             <JourneyCanvas 
               pages={pages}
               pageNodes={pageNodes}
@@ -438,9 +465,11 @@ export default function WireframeGrid() {
               }}
             />
           </div>
-        ) : (
-          /* Grid Container */
-          <div className="flex-1 bg-[#F5F5F5] p-4 overflow-hidden flex flex-col">
+          
+          {/* Grid Container */}
+          <div className={`absolute inset-0 bg-[#F5F5F5] p-4 overflow-hidden flex flex-col transition-opacity duration-500 ${
+            mode === "pages" ? "opacity-100" : "opacity-0 pointer-events-none"
+          }`}>
             {pendingComponentType && (
               <div className="mb-4 p-3 bg-neutral-100 border border-neutral-300 rounded text-sm text-neutral-700 max-w-fit">
                 <strong className="capitalize">{pendingComponentType}</strong> selected. Click or drag to an empty cell to place it.
@@ -487,7 +516,7 @@ export default function WireframeGrid() {
               </div>
             </div>
           </div>
-        )}
+        </div>
       </div>
 
       {/* Export Modal */}
