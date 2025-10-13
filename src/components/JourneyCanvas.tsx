@@ -211,7 +211,7 @@ export default function JourneyCanvas({
         className={`absolute inset-0 w-full h-full pointer-events-none transition-opacity duration-300 ${
           isVisible ? "opacity-100 delay-300" : "opacity-0"
         }`} 
-        style={{ zIndex: 1000 }}
+        style={{ zIndex: 15 }}
       >
         {connections.map(connection => {
           const fromPos = getNodePosition(connection.fromPageId);
@@ -221,8 +221,15 @@ export default function JourneyCanvas({
           // Calculate component position within the page node
           const fromPage = getPage(connection.fromPageId);
           
-          let fromY = fromPos.y + 40; // Header height
-          let fromX = fromPos.x + 320; // Right edge of the component card (340 - 20px padding)
+          const pageTagHeight = 28; // py-1.5 = 6px + 6px + text height ~16px
+          const headerHeight = 24; // pt-4 pb-2 = 16px + 8px (invisible header)
+          const componentsPaddingTop = 0; // No top padding on px-4 pb-3
+          const componentPaddingHorizontal = 16; // px-4
+          const componentHeight = 56; // Estimated full height of each component card (py-2 + content)
+          const componentGap = 6; // space-y-1.5
+          
+          let fromY = fromPos.y + pageTagHeight + headerHeight; // Start of components list
+          let fromX = fromPos.x + 340; // Right edge of the page card
           
           // If connecting from a specific component, calculate its position
           if (connection.fromComponentId && fromPage) {
@@ -235,21 +242,32 @@ export default function JourneyCanvas({
             const componentIndex = sortedComponents.findIndex(c => c.id === connection.fromComponentId);
             
             if (componentIndex !== -1) {
-              // Header (40px) + padding (20px) + component index * (component height ~84px + gap 8px) + half component height
-              fromY = fromPos.y + 40 + 20 + (componentIndex * 92) + 46; // Middle of component
+              // Position at center of the specific component
+              fromY = fromPos.y + pageTagHeight + headerHeight + componentsPaddingTop + (componentIndex * (componentHeight + componentGap)) + (componentHeight / 2);
             }
           }
           
           // Target is always the page header (center)
-          const toY = toPos.y + 40;
+          const toY = toPos.y + pageTagHeight + (headerHeight / 2); // Center of invisible header
           const toX = toPos.x; // Left edge of the target card
 
           const midX = (fromX + toX) / 2;
+          const cornerRadius = 8; // 8px curve radius
+          
+          // Calculate path with rounded corners
+          const pathData = `
+            M ${fromX} ${fromY}
+            L ${midX - cornerRadius} ${fromY}
+            Q ${midX} ${fromY} ${midX} ${fromY < toY ? fromY + cornerRadius : fromY - cornerRadius}
+            L ${midX} ${toY < fromY ? toY + cornerRadius : toY - cornerRadius}
+            Q ${midX} ${toY} ${midX + cornerRadius} ${toY}
+            L ${toX} ${toY}
+          `;
           
           return (
             <g key={connection.id}>
               <path
-                d={`M ${fromX} ${fromY} L ${midX} ${fromY} L ${midX} ${toY} L ${toX} ${toY}`}
+                d={pathData}
                 stroke={color}
                 strokeWidth="2"
                 fill="none"
@@ -295,7 +313,7 @@ export default function JourneyCanvas({
               left: node.position.x,
               top: node.position.y,
               width: 340,
-              zIndex: draggingNode === node.pageId ? 999 : 10,
+              zIndex: draggingNode === node.pageId ? 30 : 10,
             }}
           >
             {/* Page name tag - positioned outside and clickable for connections */}
@@ -337,13 +355,12 @@ export default function JourneyCanvas({
 
             {/* Components List */}
             {sortedComponents.length > 0 ? (
-              <div className="px-5 pb-4">
-                <div className="space-y-2">
+              <div className="px-4 pb-3">
+                <div className="space-y-1.5">
                   {sortedComponents.map(component => {
                     const isConnecting = connectingFrom?.pageId === node.pageId && connectingFrom?.componentId === component.id;
                     const connection = connections.find(c => 
-                      (c.fromPageId === node.pageId && c.fromComponentId === component.id) ||
-                      (c.toPageId === node.pageId && c.toComponentId === component.id)
+                      c.fromPageId === node.pageId && c.fromComponentId === component.id
                     );
                     const connectionColor = connection ? getConnectionColor(connection) : null;
                     const displayText = getComponentDisplayText(component);
@@ -351,17 +368,21 @@ export default function JourneyCanvas({
                     return (
                       <div
                         key={component.id}
-                        className={`px-4 py-3 bg-white border rounded-lg cursor-pointer hover:shadow-sm transition-all ${
-                          isConnecting ? 'border-blue-400 ring-2 ring-blue-100' : 'border-neutral-200'
+                        className={`px-3 py-2 bg-white rounded-md cursor-pointer transition-all ${
+                          isConnecting 
+                            ? 'border border-blue-400 ring-2 ring-blue-100' 
+                            : connectionColor 
+                              ? 'shadow-xl border-[3px]' 
+                              : 'border border-neutral-200 hover:shadow-sm'
                         }`}
                         style={connectionColor ? {
-                          borderLeftWidth: '3px',
-                          borderLeftColor: connectionColor,
+                          borderColor: connectionColor,
+                          borderStyle: 'solid',
                         } : undefined}
                         onClick={(e) => handleComponentClick(node.pageId, component.id, e)}
                       >
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-base font-medium text-neutral-900 capitalize">{component.type}</span>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-sm font-medium text-neutral-900 capitalize">{component.type}</span>
                           {connection && (
                             <button 
                               className="p-0.5 hover:bg-neutral-100 rounded flex-shrink-0"
@@ -370,14 +391,14 @@ export default function JourneyCanvas({
                                 handleDeleteConnection(connection.id);
                               }}
                             >
-                              <svg className="w-3.5 h-3.5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <svg className="w-3 h-3 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                               </svg>
                             </button>
                           )}
                         </div>
                         <div className="flex items-start">
-                          <span className="text-sm text-neutral-600">
+                          <span className="text-xs text-neutral-600">
                             {connection 
                               ? `Route to ${getPage(connection.toPageId)?.name || 'destination'}`
                               : displayText

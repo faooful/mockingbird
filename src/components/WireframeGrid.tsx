@@ -398,11 +398,11 @@ export default function WireframeGrid() {
     <div className="flex h-full w-full overflow-hidden">
       {/* Component Sidebar - animated slide in/out */}
       <div 
-        className={`transition-all duration-400 ease-in-out shrink-0 overflow-hidden ${
+        className={`transition-all duration-400 ease-in-out shrink-0 overflow-hidden h-full ${
           mode === "pages" ? "w-80 opacity-100 delay-200" : "w-0 opacity-0 delay-150"
         }`}
       >
-        <div className="w-80">
+        <div className="w-80 h-full">
           <ComponentSidebar 
             onSelectComponent={handleComponentSelect}
             selectedContent={selectedContent}
