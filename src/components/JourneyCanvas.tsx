@@ -159,6 +159,38 @@ export default function JourneyCanvas({
     return pages.find(p => p.id === pageId);
   };
 
+  // Helper to get display text for a component
+  const getComponentDisplayText = (component: GridContent) => {
+    const props = component.properties || {};
+    
+    switch (component.type) {
+      case "button":
+        return props.text || "Click me";
+      case "input":
+        return props.placeholder || "Enter text...";
+      case "textarea":
+        return props.placeholder || "Enter text...";
+      case "select":
+        return props.label || "Select option";
+      case "checkbox":
+        return props.label || "Checkbox";
+      case "radio":
+        return props.label || "Radio option";
+      case "switch":
+        return props.label || "Toggle";
+      case "slider":
+        return props.label || "Slider";
+      case "card":
+        return props.title || "Card";
+      case "badge":
+        return props.text || "Badge";
+      case "alert":
+        return props.title || "Alert";
+      default:
+        return component.type;
+    }
+  };
+
   return (
     <div 
       ref={canvasRef}
@@ -230,92 +262,113 @@ export default function JourneyCanvas({
         const page = getPage(node.pageId);
         if (!page) return null;
 
+        // Sort components by position
+        const sortedComponents = [...page.contents].sort((a, b) => {
+          if (a.position.row !== b.position.row) {
+            return a.position.row - b.position.row;
+          }
+          return a.position.col - b.position.col;
+        });
+
         return (
           <div
             key={node.pageId}
-            className="absolute bg-white border-2 border-neutral-300 rounded-lg shadow-lg"
+            className="absolute"
             style={{
               left: node.position.x,
               top: node.position.y,
-              width: 300,
+              width: 340,
               zIndex: draggingNode === node.pageId ? 100 : 10,
-              cursor: draggingNode === node.pageId ? 'grabbing' : 'grab'
             }}
           >
-            {/* Header */}
-            <div
-              className="bg-neutral-100 px-4 py-3 border-b border-neutral-300 rounded-t-lg cursor-grab"
-              onMouseDown={(e) => handleNodeMouseDown(e, node.pageId)}
-              onClick={(e) => handlePageClick(node.pageId, e)}
-            >
-              <h3 className="font-semibold text-sm">{page.name}</h3>
-              <p className="text-xs text-neutral-500">{page.contents.length} component(s)</p>
+            {/* Page name tag - positioned outside */}
+            <div className="relative flex items-center px-3 py-1.5 bg-amber-100 rounded-t-lg inline-flex">
+              <span className="text-sm font-semibold text-amber-800">{page.name}</span>
+              {/* Extension that goes behind the card */}
+              <div className="absolute left-0 right-0 bottom-0 h-3 bg-amber-100 translate-y-full -z-10"></div>
             </div>
+            
+            {/* Card */}
+            <div className="bg-white border border-neutral-200 rounded-xl shadow-lg relative z-0">
+              {/* Header - invisible but draggable */}
+              <div
+                className="px-5 pt-4 pb-2 cursor-grab active:cursor-grabbing"
+                onMouseDown={(e) => handleNodeMouseDown(e, node.pageId)}
+              >
+              </div>
 
-            {/* Components list */}
-            <div className="p-3 max-h-48 overflow-y-auto">
-              {page.contents.length === 0 ? (
-                <p className="text-xs text-neutral-400 italic">No components</p>
-              ) : (
-                <div className="space-y-1">
-                  {[...page.contents]
-                    .sort((a, b) => {
-                      if (a.position.row !== b.position.row) {
-                        return a.position.row - b.position.row;
-                      }
-                      return a.position.col - b.position.col;
-                    })
-                    .map(component => {
-                      const isConnecting = connectingFrom?.pageId === node.pageId && connectingFrom?.componentId === component.id;
-                      const isHovered = hoveredComponent?.pageId === node.pageId && hoveredComponent?.componentId === component.id;
-                      const connection = connections.find(c => 
-                        (c.fromPageId === node.pageId && c.fromComponentId === component.id) ||
-                        (c.toPageId === node.pageId && c.toComponentId === component.id)
-                      );
-                      const connectionColor = connection ? getConnectionColor(connection) : null;
-                      
-                      return (
-                        <div
-                          key={component.id}
-                          className={`
-                            flex items-center gap-2 px-2 py-1.5 rounded text-xs cursor-pointer transition-colors
-                            ${isConnecting ? 'bg-blue-100 border border-blue-300' : 'hover:bg-neutral-100'}
-                            ${isHovered ? 'bg-neutral-100' : ''}
-                          `}
-                          style={connectionColor ? {
-                            borderLeft: `3px solid ${connectionColor}`,
-                            backgroundColor: `${connectionColor}10`
-                          } : undefined}
-                          onClick={(e) => handleComponentClick(node.pageId, component.id, e)}
-                          onMouseEnter={() => setHoveredComponent({ pageId: node.pageId, componentId: component.id })}
-                          onMouseLeave={() => setHoveredComponent(null)}
-                        >
-                          <div 
-                            className="w-2 h-2 rounded-full"
-                            style={{ backgroundColor: connectionColor || '#a3a3a3' }}
-                          ></div>
-                          <span className="capitalize flex-1">{component.type}</span>
-                          <span className="text-neutral-400">
-                            {component.span.cols}×{component.span.rows}
+            {/* Components List */}
+            {sortedComponents.length > 0 ? (
+              <div className="px-5 pb-4">
+                <div className="space-y-2">
+                  {sortedComponents.map(component => {
+                    const isConnecting = connectingFrom?.pageId === node.pageId && connectingFrom?.componentId === component.id;
+                    const connection = connections.find(c => 
+                      (c.fromPageId === node.pageId && c.fromComponentId === component.id) ||
+                      (c.toPageId === node.pageId && c.toComponentId === component.id)
+                    );
+                    const connectionColor = connection ? getConnectionColor(connection) : null;
+                    const displayText = getComponentDisplayText(component);
+                    
+                    return (
+                      <div
+                        key={component.id}
+                        className={`px-4 py-3 bg-white border rounded-lg cursor-pointer hover:shadow-sm transition-all ${
+                          isConnecting ? 'border-blue-400 ring-2 ring-blue-100' : 'border-neutral-200'
+                        }`}
+                        style={connectionColor ? {
+                          borderLeftWidth: '3px',
+                          borderLeftColor: connectionColor,
+                        } : undefined}
+                        onClick={(e) => handleComponentClick(node.pageId, component.id, e)}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-base font-medium text-neutral-900 capitalize">{component.type}</span>
+                          {connection && (
+                            <button 
+                              className="p-0.5 hover:bg-neutral-100 rounded flex-shrink-0"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteConnection(connection.id);
+                              }}
+                            >
+                              <svg className="w-3.5 h-3.5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          )}
+                        </div>
+                        <div className="flex items-start">
+                          <span className="text-sm text-neutral-600">
+                            {connection 
+                              ? `Route to ${getPage(connection.toPageId)?.name || 'destination'}`
+                              : displayText
+                            }
                           </span>
                         </div>
-                      );
-                    })}
+                      </div>
+                    );
+                  })}
                 </div>
-              )}
-            </div>
+              </div>
+            ) : (
+              <div className="px-5 pb-4">
+                <p className="text-xs text-neutral-400 italic">No components</p>
+              </div>
+            )}
 
-            {/* Footer actions */}
-            <div className="px-3 py-2 border-t border-neutral-200 flex justify-end">
+            {/* Edit page link */}
+            <div className="px-5 py-3 border-t border-neutral-200 bg-neutral-50 rounded-b-xl">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   onPageSelect(node.pageId);
                 }}
-                className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                className="text-xs text-neutral-500 hover:text-neutral-700 font-medium"
               >
-                Edit Page →
+                Edit in Pages
               </button>
+            </div>
             </div>
           </div>
         );

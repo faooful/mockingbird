@@ -262,6 +262,38 @@ export default function WireframeGrid() {
     setSelectedContent(null);
   };
 
+  // Helper to get default properties for a component type
+  const getDefaultProperties = (type: GridContent["type"]): Record<string, any> => {
+    switch (type) {
+      case "button":
+        return { text: "Click me", variant: "default" };
+      case "input":
+        return { placeholder: "Enter text...", inputType: "text" };
+      case "textarea":
+        return { placeholder: "Enter text..." };
+      case "select":
+        return { label: "Select option" };
+      case "checkbox":
+        return { label: "Checkbox" };
+      case "radio":
+        return { label: "Radio option" };
+      case "switch":
+        return { label: "Toggle" };
+      case "slider":
+        return { label: "Slider" };
+      case "card":
+        return { title: "Card Title", description: "Card description", content: "Card content" };
+      case "badge":
+        return { text: "Badge", variant: "default" };
+      case "alert":
+        return { title: "Heads up!", description: "Alert description", variant: "default" };
+      case "sidebar":
+        return { title: "Navigation", menuItems: ["Dashboard", "Projects", "Settings"] };
+      default:
+        return {};
+    }
+  };
+
   const handleAddContent = (type: GridContent["type"], row?: number, col?: number) => {
     const position = row !== undefined && col !== undefined ? { row, col } : selectedCell;
     if (!position) return;
@@ -271,7 +303,7 @@ export default function WireframeGrid() {
       type,
       span: { rows: 1, cols: 1 },
       position,
-      properties: {},
+      properties: getDefaultProperties(type),
     };
 
     setContents(prev => [...prev, newContent]);
@@ -350,13 +382,15 @@ export default function WireframeGrid() {
 
   return (
     <div className="flex h-full w-full">
-      {/* Component Sidebar */}
-      <ComponentSidebar 
-        onSelectComponent={handleComponentSelect}
-        selectedContent={selectedContent}
-        onUpdateContent={handleUpdateContent}
-        onDeselectComponent={() => setSelectedContent(null)}
-      />
+      {/* Component Sidebar - only show in Pages mode */}
+      {mode === "pages" && (
+        <ComponentSidebar 
+          onSelectComponent={handleComponentSelect}
+          selectedContent={selectedContent}
+          onUpdateContent={handleUpdateContent}
+          onDeselectComponent={() => setSelectedContent(null)}
+        />
+      )}
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col h-full overflow-hidden">
