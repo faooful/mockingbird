@@ -4,11 +4,17 @@
 
 Mockingbird is a modern, intuitive wireframing application that helps designers and developers quickly create layouts and visualize user flows. Built with Next.js and shadcn/ui, it bridges the gap between design and development by generating AI-ready prompts from your wireframes.
 
-![Pages View](./public/screenshots/pages-view.png)
+![Pages View](public/screenshots/pages.png)
 *Wireframe editor with drag-and-drop components*
 
-![Journeys View](./public/screenshots/journeys-view.png)
+![Journeys View](public/screenshots/journeys.png)
 *User journey mapping with visual flow connections*
+
+![Preview](public/screenshots/preview.png)
+*Preview your layout before exporting*
+
+![Export](public/screenshots/export.png)
+*Generate AI-ready prompts from your wireframes*
 
 ## ✨ Features
 
