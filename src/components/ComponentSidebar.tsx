@@ -24,12 +24,12 @@ export default function ComponentSidebar({ onSelectComponent, selectedContent, o
   const [searchQuery, setSearchQuery] = useState("");
   const [draggingComponent, setDraggingComponent] = useState<string | null>(null);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
-    new Set(["Form Elements", "Data Display", "Navigation", "Feedback", "Data Viz", "Layout"])
+    new Set(["Components", "Data Viz"])
   );
 
   const componentCategories = [
     {
-      name: "Form Elements",
+      name: "Components",
       components: [
         { type: "button" as const, label: "Button" },
         { type: "input" as const, label: "Input" },
@@ -39,33 +39,22 @@ export default function ComponentSidebar({ onSelectComponent, selectedContent, o
         { type: "radio" as const, label: "Radio" },
         { type: "switch" as const, label: "Switch" },
         { type: "slider" as const, label: "Slider" },
-      ]
-    },
-    {
-      name: "Data Display",
-      components: [
         { type: "card" as const, label: "Card" },
         { type: "table" as const, label: "Table" },
         { type: "badge" as const, label: "Badge" },
         { type: "avatar" as const, label: "Avatar" },
-      ]
-    },
-    {
-      name: "Navigation",
-      components: [
         { type: "tabs" as const, label: "Tabs" },
         { type: "dropdown" as const, label: "Dropdown" },
         { type: "sidebar" as const, label: "Sidebar" },
-      ]
-    },
-    {
-      name: "Feedback",
-      components: [
         { type: "alert" as const, label: "Alert" },
         { type: "progress" as const, label: "Progress" },
         { type: "skeleton" as const, label: "Skeleton" },
         { type: "tooltip" as const, label: "Tooltip" },
         { type: "popover" as const, label: "Popover" },
+        { type: "accordion" as const, label: "Accordion" },
+        { type: "separator" as const, label: "Separator" },
+        { type: "calendar" as const, label: "Calendar" },
+        { type: "datepicker" as const, label: "Date Picker" },
       ]
     },
     {
@@ -75,15 +64,6 @@ export default function ComponentSidebar({ onSelectComponent, selectedContent, o
         { type: "linechart" as const, label: "Line Chart" },
         { type: "areachart" as const, label: "Area Chart" },
         { type: "piechart" as const, label: "Pie Chart" },
-      ]
-    },
-    {
-      name: "Layout",
-      components: [
-        { type: "accordion" as const, label: "Accordion" },
-        { type: "separator" as const, label: "Separator" },
-        { type: "calendar" as const, label: "Calendar" },
-        { type: "datepicker" as const, label: "Date Picker" },
       ]
     }
   ];
@@ -102,9 +82,15 @@ export default function ComponentSidebar({ onSelectComponent, selectedContent, o
     });
   };
 
-  const filteredComponents = components.filter(component =>
-    component.label.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter categories and components based on search
+  const filteredCategories = searchQuery
+    ? componentCategories.map(category => ({
+        ...category,
+        components: category.components.filter(component =>
+          component.label.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+      })).filter(category => category.components.length > 0)
+    : componentCategories;
 
   const getComponentPreview = (type: GridContent["type"]) => {
     switch (type) {
@@ -492,9 +478,27 @@ export default function ComponentSidebar({ onSelectComponent, selectedContent, o
             {/* Gradient fade at top */}
             <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-white to-white/0 pointer-events-none z-10"></div>
             
-            <div className="h-full overflow-y-auto p-3">
-            <div className="grid grid-cols-2 gap-2">
-              {filteredComponents.map((component) => (
+            <div className="h-full overflow-y-auto p-3 space-y-4">
+            {filteredCategories.map((category) => (
+              <div key={category.name}>
+                <button
+                  onClick={() => toggleCategory(category.name)}
+                  className="w-full flex items-center justify-between mb-2 text-sm font-semibold text-neutral-700 hover:text-neutral-900"
+                >
+                  <span>{category.name}</span>
+                  <svg
+                    className={`w-4 h-4 transition-transform ${expandedCategories.has(category.name) ? 'rotate-90' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+                
+                {expandedCategories.has(category.name) && (
+                  <div className="grid grid-cols-2 gap-2">
+                    {category.components.map((component) => (
                 <div
                   key={component.type}
                   draggable
@@ -530,7 +534,10 @@ export default function ComponentSidebar({ onSelectComponent, selectedContent, o
                   <span className="text-xs text-neutral-600 font-medium pointer-events-none">{component.label}</span>
                 </div>
               ))}
-            </div>
+                  </div>
+                )}
+              </div>
+            ))}
             </div>
           </div>
         </div>

@@ -16,10 +16,10 @@ import { GridContent } from "./WireframeGrid";
 
 interface ShadcnComponentProps {
   content: GridContent;
-  span: { rows: number; cols: number };
+  span?: { rows: number; cols: number };
 }
 
-export default function ShadcnComponent({ content }: ShadcnComponentProps) {
+export default function ShadcnComponent({ content, span = { rows: 1, cols: 1 } }: ShadcnComponentProps) {
   const props = content.properties || {};
   
   const renderComponent = () => {
@@ -66,10 +66,21 @@ export default function ShadcnComponent({ content }: ShadcnComponentProps) {
         );
 
       case "table":
+        // Calculate number of rows based on span height (approximate)
+        const rowHeight = 40; // Approximate height per row including header
+        const minRows = 2;
+        const estimatedRows = Math.max(minRows, Math.floor((span.rows * 100) / rowHeight));
+        
+        const defaultRows = Array.from({ length: estimatedRows }, (_, i) => ({
+          name: `Item ${i + 1}`,
+          status: i % 2 === 0 ? "Active" : "Inactive",
+          date: `2024-01-${String(15 + i).padStart(2, '0')}`
+        }));
+        
         return (
-          <div className="w-full h-full p-2 overflow-auto">
-            <div className="border rounded-md">
-              <Table className="text-xs">
+          <div className="w-full h-full p-2 overflow-auto flex flex-col">
+            <div className="border rounded-md flex-1 flex flex-col overflow-hidden">
+              <Table className="text-xs h-full">
               <TableHeader>
                 <TableRow>
                   <TableHead>Name</TableHead>
@@ -78,10 +89,7 @@ export default function ShadcnComponent({ content }: ShadcnComponentProps) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {(props.rows || [
-                  { name: "John Doe", status: "Active", date: "2024-01-15" },
-                  { name: "Jane Smith", status: "Inactive", date: "2024-01-14" }
-                ]).map((row: any, index: number) => (
+                {(props.rows || defaultRows).map((row: any, index: number) => (
                   <TableRow key={index}>
                     <TableCell className="text-xs">{row.name}</TableCell>
                     <TableCell className="text-xs">
