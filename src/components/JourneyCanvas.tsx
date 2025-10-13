@@ -224,12 +224,12 @@ export default function JourneyCanvas({
           const pageTagHeight = 28; // py-1.5 = 6px + 6px + text height ~16px
           const headerHeight = 24; // pt-4 pb-2 = 16px + 8px (invisible header)
           const componentsPaddingTop = 0; // No top padding on px-4 pb-3
-          const componentPaddingHorizontal = 16; // px-4
+          const componentPaddingHorizontal = 16; // px-4 on the components list container
           const componentHeight = 56; // Estimated full height of each component card (py-2 + content)
           const componentGap = 6; // space-y-1.5
           
           let fromY = fromPos.y + pageTagHeight + headerHeight; // Start of components list
-          let fromX = fromPos.x + 340; // Right edge of the page card
+          let fromX = fromPos.x + 340 - componentPaddingHorizontal; // Right edge of component cards (not the page card)
           
           // If connecting from a specific component, calculate its position
           if (connection.fromComponentId && fromPage) {
