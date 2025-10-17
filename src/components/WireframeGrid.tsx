@@ -462,7 +462,7 @@ export default function WireframeGrid() {
           </div>
           
           {/* Grid Container - fades out first (pages→journeys) / fades in last (journeys→pages) */}
-          <div className={`absolute inset-0 bg-[#F5F5F5] p-4 overflow-hidden flex flex-col transition-opacity duration-400 ${
+          <div className={`absolute inset-0 bg-[#F5F5F5] overflow-hidden flex flex-col transition-opacity duration-400 ${
             mode === "pages" ? "opacity-100 delay-500" : "opacity-0 pointer-events-none delay-0"
           }`}>
             {pendingComponentType && (
@@ -477,7 +477,6 @@ export default function WireframeGrid() {
                   display: 'grid',
                   gridTemplateRows: `repeat(${rows}, 1fr)`,
                   gridTemplateColumns: `repeat(${cols}, 1fr)`,
-                  gap: '8px',
                   maxHeight: '100%',
                   maxWidth: device === "mobile" ? '100%' : '100%'
                 }}
