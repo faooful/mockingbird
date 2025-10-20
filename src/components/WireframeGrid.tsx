@@ -465,11 +465,6 @@ export default function WireframeGrid() {
           <div className={`absolute inset-0 bg-[#F5F5F5] p-2 overflow-hidden flex flex-col transition-opacity duration-400 ${
             mode === "pages" ? "opacity-100 delay-500" : "opacity-0 pointer-events-none delay-0"
           }`}>
-            {pendingComponentType && (
-              <div className="mb-4 p-3 bg-neutral-100 border border-neutral-300 rounded text-sm text-neutral-700 max-w-fit">
-                <strong className="capitalize">{pendingComponentType}</strong> selected. Click or drag to an empty cell to place it.
-              </div>
-            )}
             <div className={`flex-1 flex items-center justify-center ${device === "mobile" ? "max-w-md mx-auto" : ""}`}>
               <div 
                 className="w-full h-full border border-gray-300 rounded overflow-hidden"

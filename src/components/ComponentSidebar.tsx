@@ -341,12 +341,84 @@ export default function ComponentSidebar({ onSelectComponent, selectedContent, o
                 {selectedContent.type === "input" && (
                   <div className="space-y-2">
                     <div>
+                      <Label className="text-xs">Label</Label>
+                      <Input
+                        value={selectedContent.properties?.label || ""}
+                        onChange={(e) => handlePropertyChange("label", e.target.value)}
+                        className="text-xs h-8"
+                        placeholder="Input label"
+                      />
+                    </div>
+                    <div>
                       <Label className="text-xs">Placeholder</Label>
                       <Input
                         value={selectedContent.properties?.placeholder || ""}
                         onChange={(e) => handlePropertyChange("placeholder", e.target.value)}
                         className="text-xs h-8"
                         placeholder="Enter placeholder"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Default Value</Label>
+                      <Input
+                        value={selectedContent.properties?.defaultValue || ""}
+                        onChange={(e) => handlePropertyChange("defaultValue", e.target.value)}
+                        className="text-xs h-8"
+                        placeholder="Default value"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Type</Label>
+                      <Select
+                        value={selectedContent.properties?.inputType || "text"}
+                        onValueChange={(value) => handlePropertyChange("inputType", value)}
+                      >
+                        <SelectTrigger className="text-xs h-8">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="text">Text</SelectItem>
+                          <SelectItem value="email">Email</SelectItem>
+                          <SelectItem value="password">Password</SelectItem>
+                          <SelectItem value="number">Number</SelectItem>
+                          <SelectItem value="tel">Phone</SelectItem>
+                          <SelectItem value="url">URL</SelectItem>
+                          <SelectItem value="search">Search</SelectItem>
+                          <SelectItem value="date">Date</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                )}
+
+                {selectedContent.type === "textarea" && (
+                  <div className="space-y-2">
+                    <div>
+                      <Label className="text-xs">Label</Label>
+                      <Input
+                        value={selectedContent.properties?.label || ""}
+                        onChange={(e) => handlePropertyChange("label", e.target.value)}
+                        className="text-xs h-8"
+                        placeholder="Textarea label"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Placeholder</Label>
+                      <Input
+                        value={selectedContent.properties?.placeholder || ""}
+                        onChange={(e) => handlePropertyChange("placeholder", e.target.value)}
+                        className="text-xs h-8"
+                        placeholder="Enter placeholder"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Rows</Label>
+                      <Input
+                        type="number"
+                        value={selectedContent.properties?.rows || "3"}
+                        onChange={(e) => handlePropertyChange("rows", e.target.value)}
+                        className="text-xs h-8"
+                        placeholder="Number of rows"
                       />
                     </div>
                   </div>
@@ -370,6 +442,15 @@ export default function ComponentSidebar({ onSelectComponent, selectedContent, o
                         onChange={(e) => handlePropertyChange("description", e.target.value)}
                         className="text-xs h-8"
                         placeholder="Card description"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Content</Label>
+                      <Input
+                        value={selectedContent.properties?.content || ""}
+                        onChange={(e) => handlePropertyChange("content", e.target.value)}
+                        className="text-xs h-8"
+                        placeholder="Card content"
                       />
                     </div>
                   </div>
