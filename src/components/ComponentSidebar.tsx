@@ -226,7 +226,7 @@ export default function ComponentSidebar({ onSelectComponent, selectedContent, o
   };
 
   return (
-    <div className="w-80 border-r border-neutral-300 bg-white h-full flex flex-col">
+    <div className="w-80 border-r border-neutral-300 bg-white h-full flex flex-col shadow-[8px_0_24px_0_rgba(0,0,0,0.25)] relative z-10">
       {selectedContent ? (
         /* Details Panel */
         <div className="flex-1 flex flex-col overflow-hidden">

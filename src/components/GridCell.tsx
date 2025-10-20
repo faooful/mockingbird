@@ -150,18 +150,17 @@ export default function GridCell({
   return (
     <div
       className={cn(
-        "relative cursor-default transition-all duration-200 group/cell bg-white overflow-hidden",
+        "relative cursor-default transition-all duration-200 group/cell overflow-hidden",
         // Right border (not on last column)
         !isLastCol && "border-r border-gray-200/20",
         // Bottom border (not on last row)
         !isLastRow && "border-b border-gray-200/20",
         // Empty cell styling
         !content && "border-dashed",
-        !content && "hover:border-gray-300/30 hover:bg-gray-50/30",
         // Selected state
         isSelected && "!border-solid !border-gray-300 ring-1 ring-gray-200/30",
         // Cell with content
-        content && !isDragging && "!border-solid !border-gray-200/25 shadow-md",
+        content && !isDragging && "!border-solid !border-gray-200/25 bg-white shadow-md",
         // Dragging state
         isDragging && "opacity-50 scale-95 !border-dashed !border-blue-400",
         // Drag over state
